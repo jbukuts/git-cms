@@ -25,3 +25,14 @@ export function extractFrontmatter(rawMarkdown: string) {
 
   console.log(fm.data)
 }
+
+/**
+ * Helper to decode encoded string
+ *
+ * @param raw raw encoded content as string
+ * @param encoding encoding type
+ * @returns decoded content
+ */
+export function decode(raw: string, encoding: BufferEncoding) {
+  return Buffer.from(raw, encoding).toString()
+}

@@ -34,7 +34,7 @@ export interface GitCMSSettings {
   schema?: SchemaObject
 }
 
-export type GetTreeData = Endpoints[typeof GET_TREE_REQ]['response']['data']
+export type GetTreeResData = Endpoints[typeof GET_TREE_REQ]['response']['data']
 
 /**
  * Options when listing content from repository
@@ -52,13 +52,25 @@ export interface ListFilesOptions {
    * Whether to recursive through file structure
    */
   recursive?: boolean
+  /**
+   * Whether to append raw content to obj
+   */
+  includeContent?: boolean
+  /**
+   * Whether to sort dates by ascending or not
+   */
+  ascending?: boolean
+  /**
+   * Which dates to sort list by
+   */
+  sortBy?: 'updated' | 'created'
 }
 
-export interface TreeItem extends Required<GetTreeData['tree'][0]> {
+export interface TreeItem extends Required<GetTreeResData['tree'][0]> {
   children?: Record<string, TreeItem>
 }
 
-export interface FileListItem extends Required<Omit<GetTreeData['tree'][0], 'mode' | 'type'>> {
+export interface FileListItem extends Required<Omit<GetTreeResData['tree'][0], 'mode' | 'type'>> {
   filename: string
 }
 
@@ -66,11 +78,32 @@ export interface FileListItem extends Required<Omit<GetTreeData['tree'][0], 'mod
  * Resulting item representing content from repository
  */
 export interface FileListOject<FrontMatter> extends FileListItem {
+  /**
+   * Title of document. Sourced from first heading element
+   */
   title: string | null
+  /**
+   * Amount of time to read
+   */
   reading_time: number
+  /**
+   * Creation date of item. Sourced from first commit.
+   */
   created: string | undefined
+  /**
+   * Updated date of item. Sourced from last commit.
+   */
   updated: string | undefined
+  /**
+   * Frontmatter data in document
+   */
   frontmatter: FrontMatter
+  /**
+   * Table of contents of document
+   */
   toc: TocEntry[]
-  getContent: () => Promise<string>
+  /**
+   * Raw markup
+   */
+  content?: string
 }

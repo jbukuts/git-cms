@@ -1,5 +1,5 @@
 import { Octokit } from 'octokit'
-import { calcReadTime, splitPath } from './lib/helpers'
+import { calcReadTime, decode, splitPath } from './lib/helpers'
 import type { SchemaObject } from 'ajv'
 import parseLinkHeader from 'parse-link-header'
 import { createToC, flattenTree, validateFrontmatter } from './lib'
@@ -61,7 +61,8 @@ export default class GitCMS<FM = Record<string, unknown>> {
         const { path, type } = item
         return (
           path !== undefined &&
-          ((type === 'blob' && extensions?.some((ext) => path.endsWith(ext))) || type === 'tree')
+          ((type === 'blob' && extensions?.some((ext) => path.endsWith(ext))) ||
+            (recurse && type === 'tree'))
         )
       })
       .reduce(
@@ -115,12 +116,12 @@ export default class GitCMS<FM = Record<string, unknown>> {
 
   /**
    * Get blob for given sha
-   * @public
+   * @private
    *
    * @param sha sha1 of item to get blob for
    * @returns response data for blob item from API
    */
-  public async getBlob(sha: string) {
+  private async getBlob(sha: string) {
     return this.octoInstance
       .request(GET_BLOB_REQ, {
         owner: this.settings.owner,
@@ -176,6 +177,19 @@ export default class GitCMS<FM = Record<string, unknown>> {
   }
 
   /**
+   * Get raw content as string
+   * @public
+   *
+   * @param sha hash reffering to item
+   * @returns raw content
+   */
+  public async getRawContent(sha: string): Promise<string> {
+    const blobRes = await this.getBlob(sha)
+    const { content, encoding } = blobRes
+    return decode(content, encoding as BufferEncoding)
+  }
+
+  /**
    * Create list of items from repository via GitHub Trees API
    * Will traverse directories recursively to get all items
    * @public
@@ -183,8 +197,15 @@ export default class GitCMS<FM = Record<string, unknown>> {
    * @param options
    * @returns list of content with metadata attached
    */
-  public async listItems(options: ListFilesOptions) {
-    const { extensions = ['.md'], path = this.settings.srcPath, recursive = false } = options
+  public async listItems(options: ListFilesOptions | void) {
+    const {
+      extensions = ['.md'],
+      path = this.settings.srcPath,
+      recursive = false,
+      includeContent = true,
+      ascending = false,
+      sortBy = 'created'
+    } = options || {}
 
     // get sha of starting folder
     const sha = await this.getShaOfPath(path)
@@ -202,14 +223,17 @@ export default class GitCMS<FM = Record<string, unknown>> {
         const data = await this.getBlob(sha)
         const { content, encoding } = data
 
-        const decode = (c: string, e: BufferEncoding) => Buffer.from(c, e).toString()
-        const { data: fm, content: clipContent } = validateFrontmatter(
-          decode(content, encoding as BufferEncoding),
-          this.fmSchema
-        )
+        // decoded content
+        const decodedContent = decode(content, encoding as BufferEncoding)
+
+        // extract and validate fronmatter
+        const { data: fm, content: rawContent } = validateFrontmatter(decodedContent, this.fmSchema)
+
+        // get creation, updated dates via commits
         const [created, updated] = await this.getDates(path)
 
-        const toc = createToC(clipContent)
+        // generate additional metadata
+        const toc = createToC(rawContent)
         const reading_time = calcReadTime(size)
 
         const obj: FileListOject<FM> = {
@@ -220,8 +244,7 @@ export default class GitCMS<FM = Record<string, unknown>> {
           updated,
           ...item,
           frontmatter: fm as FM,
-          getContent: () =>
-            this.getBlob(sha).then((r) => decode(r.content, r.encoding as BufferEncoding))
+          ...(includeContent ? { content: rawContent } : {})
         }
 
         return obj
@@ -229,7 +252,12 @@ export default class GitCMS<FM = Record<string, unknown>> {
     )
 
     // sort list by dates
-    finalList.sort((a, b) => a.created?.localeCompare(b.created || '') || 0)
+    finalList.sort((a, b) => {
+      const aDate = a[sortBy] ? new Date(a[sortBy]!).getTime() : Number.NEGATIVE_INFINITY
+      const bDate = b[sortBy] ? new Date(b[sortBy]!).getTime() : Number.NEGATIVE_INFINITY
+
+      return (ascending ? 1 : -1) * (aDate - bDate)
+    })
     return finalList
   }
 }
