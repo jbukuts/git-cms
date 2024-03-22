@@ -1,0 +1,57 @@
+name: NPM Publish
+
+on:
+  workflow_dispatch:
+
+# Default to bash
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  # Generate docs job
+  generate:
+    # prevents this action from running on forks
+    if: github.repository == 'jbukuts/git-cms'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set-up Node
+        uses: actions/setup-node@v4
+        with:
+          registry-url: https://registry.npmjs.org/
+          node-version: lts/*
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate docs
+        run: npm run doc
+
+      - name: Create artifact
+        uses: actions/upload-artifact@v4
+        with:
+          path: docs
+          name: doc-artifact
+
+  # Deploy job
+  deploy:
+    needs: generate
+
+    permissions:
+      pages: write
+      id-token: write
+
+    # Deploy to the github-pages environment
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
