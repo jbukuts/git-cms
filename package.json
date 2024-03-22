@@ -4,6 +4,9 @@
   "description": "Source raw Markdown content from GitHub repository in a predictable type-safe manner like a CMS",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
   "type": "module",
   "scripts": {
     "example": "tsx ./example/bin.ts",
