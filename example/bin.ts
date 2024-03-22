@@ -1,5 +1,5 @@
 import 'dotenv/config'
-import GitCMS from '../dist'
+import GitCMS from '../src'
 import { FromSchema } from 'json-schema-to-ts'
 import { SchemaObject } from 'ajv'
 import util from 'util'
