@@ -12,6 +12,10 @@ import type {
   FileListOject
 } from './types'
 
+/**
+ * @class
+ *
+ */
 export default class GitCMS<FM = Record<string, unknown>> {
   /** @private */
   private settings: GitCMSSettings
@@ -180,8 +184,8 @@ export default class GitCMS<FM = Record<string, unknown>> {
    * Get raw content as string
    * @public
    *
-   * @param sha hash reffering to item
-   * @returns raw content
+   * @param {string} sha hash reffering to item
+   * @returns Raw content
    */
   public async getRawContent(sha: string): Promise<string> {
     const blobRes = await this.getBlob(sha)
@@ -194,8 +198,8 @@ export default class GitCMS<FM = Record<string, unknown>> {
    * Will traverse directories recursively to get all items
    * @public
    *
-   * @param options
-   * @returns list of content with metadata attached
+   * @param {ListFilesOptions} options Options for sourcing content from repository
+   * @returns List of content with metadata attached
    */
   public async listItems(options: ListFilesOptions | void) {
     const {
