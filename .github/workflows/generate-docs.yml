@@ -1,4 +1,4 @@
-name: NPM Publish
+name: Generate Docs
 
 on:
   workflow_dispatch:
