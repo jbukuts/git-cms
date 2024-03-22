@@ -35,7 +35,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           path: docs
-          name: doc-artifact
+          name: github-pages
 
   # Deploy job
   deploy:
