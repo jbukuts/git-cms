@@ -20,24 +20,17 @@ Then this may be of some use for you.
 
 This tool is not designed to replace something like Sanity. It's more for people who like to have flexibilty in how they edit their content and like to use GitHub normally.
 
-## Limitations
+## Installation
 
-This tool is designed to be **READ ONLY** to your content with the default use of GitHub being the intended use case for updating content.
-
-Depending on the amount of content you want to source you may run into rate limits set by the GitHub API.
-
-Also, the content returned to you will be raw Markdown in its plaintext form. This keeps the response agnostic to your use case. For transforming content for rendering that will depend on your tech stack. 
-
-Here's a list of common tools by framework:
-
-- Next.js: `next-mdx-remote`
-- SvelteKit: `mdsvex`
+```bash
+npm install git-as-a-cms
+```
 
 ## API
 
 Below are examples of using the exposed APIs.
 
-### `new GitCMS()` (contructor)
+### `new GitCMS()`
 
 Creating an instance is easy:
 
@@ -108,3 +101,16 @@ for await (const item of contentList) {
   console.log(rawContent)
 }
 ```
+
+## Limitations
+
+This tool is designed to be **READ ONLY** to your content with the default use of GitHub being the intended use case for updating content.
+
+Depending on the amount of content you want to source you may run into rate limits set by the GitHub API.
+
+Also, the content returned to you will be raw Markdown in its plaintext form. This keeps the response agnostic to your use case. For transforming content for rendering that will depend on your tech stack. 
+
+Here's a list of common tools by framework:
+
+- Next.js: `next-mdx-remote`
+- SvelteKit: `mdsvex`
