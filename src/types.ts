@@ -73,6 +73,8 @@ export interface TreeItem extends Required<GetTreeResData['tree'][0]> {
 
 export type FileListItem = Required<Omit<GetTreeResData['tree'][0], 'mode' | 'type'>>
 
+type PathObj = Pick<ReturnType<typeof path.posix.parse>, 'dir' | 'ext' | 'name'>
+
 /**
  * Resulting item representing content from repository
  */
@@ -108,7 +110,7 @@ export interface FileListOject<FrontMatter> extends Omit<FileListItem, 'path'> {
   /**
    * Split items from path string.
    */
-  path: Pick<ReturnType<typeof path.posix.parse>, 'dir' | 'ext' | 'name'>
+  path: PathObj
   /**
    * Full path string to item from root of repository.
    */
