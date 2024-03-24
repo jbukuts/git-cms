@@ -2,6 +2,7 @@ import type { Endpoints } from '@octokit/types'
 import type { SchemaObject } from 'ajv'
 import type { TocEntry } from './lib/toc'
 import type { GET_TREE_REQ } from './constants'
+import path from 'path'
 
 export type WithRequired<T, K extends keyof T> = T & { [P in K]-?: T[P] }
 
@@ -70,20 +71,18 @@ export interface TreeItem extends Required<GetTreeResData['tree'][0]> {
   children?: Record<string, TreeItem>
 }
 
-export interface FileListItem extends Required<Omit<GetTreeResData['tree'][0], 'mode' | 'type'>> {
-  filename: string
-}
+export type FileListItem = Required<Omit<GetTreeResData['tree'][0], 'mode' | 'type'>>
 
 /**
  * Resulting item representing content from repository
  */
-export interface FileListOject<FrontMatter> extends FileListItem {
+export interface FileListOject<FrontMatter> extends Omit<FileListItem, 'path'> {
   /**
-   * Title of document. Sourced from first heading element
+   * Title of document. Sourced from first heading element.
    */
   title: string | null
   /**
-   * Amount of time to read
+   * Amount of time to read. Rough calculation based on file byte size.
    */
   reading_time: number
   /**
@@ -95,15 +94,23 @@ export interface FileListOject<FrontMatter> extends FileListItem {
    */
   updated: string | undefined
   /**
-   * Frontmatter data in document
+   * Frontmatter data in document.
    */
   frontmatter: FrontMatter
   /**
-   * Table of contents of document
+   * Table of contents of document.
    */
   toc: TocEntry[]
   /**
-   * Raw markup
+   * Raw markup.
    */
   content?: string
+  /**
+   * Split items from path string.
+   */
+  path: Pick<ReturnType<typeof path.posix.parse>, 'dir' | 'ext' | 'name'>
+  /**
+   * Full path string to item from root of repository.
+   */
+  full_path: string
 }

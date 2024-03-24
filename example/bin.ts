@@ -36,22 +36,28 @@ const gitCms = new GitCMS<FrontMatter>({
 })
 
 async function main(): Promise<void> {
+  const startTime = performance.now()
+
   const filesTree = await gitCms.listItems({
-    recursive: false,
+    recursive: true,
     includeContent: false,
     ascending: true,
     sortBy: 'updated'
   })
 
+  const endTime = performance.now()
+
   // log data from call
   console.log(util.inspect(filesTree, { showHidden: false, depth: null, colors: true }))
 
+  console.log(endTime - startTime)
+
   // get full md content for each item
-  for await (const item of filesTree) {
-    const { sha } = item
-    const content = await gitCms.getRawContent(sha)
-    console.log(content)
-  }
+  // for await (const item of filesTree) {
+  //   const { sha } = item
+  //   const content = await gitCms.getRawContent(sha)
+  //   console.log(content)
+  // }
 
   return
 }

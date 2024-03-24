@@ -11,6 +11,7 @@ import type {
   TreeItem,
   FileListOject
 } from './types'
+import p from 'path'
 
 /**
  * @class
@@ -78,12 +79,21 @@ export default class GitCMS<FM = Record<string, unknown>> {
         {} as Record<string, TreeItem>
       )
 
+    // recursively travserse (faster)
+    await Promise.all(
+      Object.values(structure.children).map(async (item) => {
+        const { sha, type } = item
+        if (type === 'tree' && sha && recurse)
+          await this.manualTreeTraverse(sha, extensions, recurse, item)
+      })
+    )
+
     // recursively travserse
-    for await (const item of Object.values(structure.children)) {
-      const { sha, type } = item
-      if (type === 'tree' && sha && recurse)
-        await this.manualTreeTraverse(sha, extensions, recurse, item)
-    }
+    // for await (const item of Object.values(structure.children)) {
+    //   const { sha, type } = item
+    //   if (type === 'tree' && sha && recurse)
+    //     await this.manualTreeTraverse(sha, extensions, recurse, item)
+    // }
 
     return structure as WithRequired<TreeItem, 'path' | 'sha'>
   }
@@ -164,16 +174,15 @@ export default class GitCMS<FM = Record<string, unknown>> {
    * @param path path to item to obtain dates for
    * @returns tuple contains created and lasted updated date strings
    */
-  private async getDates(relPath: string) {
-    const fullPath = this.settings.srcPath + relPath
-    const { data, headers } = await this.getCommits(fullPath)
+  private async getDates(path: string) {
+    const { data, headers } = await this.getCommits(path)
 
     const updated = data[0]
     let created = data[data.length - 1]
 
     const links = parseLinkHeader(headers.link)
     if (links && links.last?.page) {
-      const { data } = await this.getCommits(fullPath, parseInt(links.last.page))
+      const { data } = await this.getCommits(path, parseInt(links.last.page))
       created = data.pop()!
     }
 
@@ -218,7 +227,7 @@ export default class GitCMS<FM = Record<string, unknown>> {
     const tree = await this.manualTreeTraverse(sha, extensions, recursive)
 
     // flatten rec tree to list of files
-    const flat = flattenTree(tree)
+    const flat = flattenTree(tree, path)
 
     // generate list
     const finalList: FileListOject<FM>[] = await Promise.all(
@@ -240,6 +249,8 @@ export default class GitCMS<FM = Record<string, unknown>> {
         const toc = createToC(rawContent)
         const reading_time = calcReadTime(size)
 
+        const { dir, name, ext } = p.posix.parse(path)
+
         const obj: FileListOject<FM> = {
           title: toc[0]?.title || null,
           reading_time,
@@ -247,6 +258,12 @@ export default class GitCMS<FM = Record<string, unknown>> {
           created,
           updated,
           ...item,
+          path: {
+            dir,
+            name,
+            ext
+          },
+          full_path: path,
           frontmatter: fm as FM,
           ...(includeContent ? { content: rawContent } : {})
         }

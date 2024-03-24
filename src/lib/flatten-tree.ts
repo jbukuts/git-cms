@@ -10,13 +10,13 @@ import type { FileListItem, TreeItem } from '../types'
 export default function flattenTree(tree: TreeItem, pathPrefix = '', list: FileListItem[] = []) {
   for (const item of Object.values(tree.children || {})) {
     const { children, path, size, sha, url } = item
+    const fullPath = `${pathPrefix}/${path}`
 
     if (children) {
-      flattenTree(item, `${pathPrefix}/${path}`, list)
+      flattenTree(item, fullPath, list)
     } else {
       list.splice(0, 0, {
-        filename: path,
-        path: `${pathPrefix}/${path}`,
+        path: fullPath,
         size,
         sha,
         url
