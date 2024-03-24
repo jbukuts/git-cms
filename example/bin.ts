@@ -27,6 +27,9 @@ type FrontMatter = FromSchema<typeof schema>
 
 const { API_KEY, OWNER, REPO, SRC_PATH } = process.env as Record<string, string>
 
+if (!API_KEY || !OWNER || !REPO || !SRC_PATH)
+  throw new Error('You need to configure a .env file to run this example!')
+
 const gitCms = new GitCMS<FrontMatter>({
   apiKey: API_KEY,
   owner: OWNER,
@@ -52,12 +55,12 @@ async function main(): Promise<void> {
 
   console.log(endTime - startTime)
 
-  // get full md content for each item
-  // for await (const item of filesTree) {
-  //   const { sha } = item
-  //   const content = await gitCms.getRawContent(sha)
-  //   console.log(content)
-  // }
+  // get full raw content for each item
+  for await (const item of filesTree) {
+    const { sha } = item
+    const content = await gitCms.getRawContent(sha)
+    console.log(content)
+  }
 
   return
 }

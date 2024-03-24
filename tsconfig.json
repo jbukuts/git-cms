@@ -24,6 +24,6 @@
 
     /* Path aliases */
   },
-  "include": ["src", "./rollup.config.mjs", "./.eslintrc.cjs", "./example/*.ts"],
+  "include": ["src", "./rollup.config.mjs", "./.eslintrc.cjs", "./example/*.ts", "__test__"],
   "exclude": ["node_modules"],
 }

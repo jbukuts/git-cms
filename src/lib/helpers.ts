@@ -1,5 +1,3 @@
-import matter from 'gray-matter'
-
 /**
  * Heler to split path into array
  * @param path path string to split
@@ -18,12 +16,6 @@ export function calcReadTime(byteLength: number) {
   const averageWordsPerMin = 200
   const averageWordLen = 5
   return Math.ceil(byteLength / averageWordLen / averageWordsPerMin)
-}
-
-export function extractFrontmatter(rawMarkdown: string) {
-  const fm = matter(rawMarkdown)
-
-  console.log(fm.data)
 }
 
 /**

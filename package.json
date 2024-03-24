@@ -11,7 +11,7 @@
   "scripts": {
     "example": "tsx ./example/bin.ts",
     "build": "tsc && rollup -c",
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "NODE_V8_COVERAGE=coverage/ node --import tsx --test __test__/**/*.test.ts",
     "lint": "eslint .",
     "doc": "jsdoc -d ./docs -c jsdoc.json src"
   },
@@ -58,6 +58,6 @@
     "typescript-eslint": "^7.0.2"
   },
   "engines": {
-    "node": "^18.18.0 || >=20.0.0"
+    "node": "^21.7.1 || >=20.0.0"
   }
 }

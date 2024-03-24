@@ -27,6 +27,9 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Unit tests
+        run: npm run test
+
       - name: Transpile
         run: npm run build
 
