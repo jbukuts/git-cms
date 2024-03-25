@@ -7,6 +7,9 @@
     <a href="https://github.com/jbukuts/git-cms/blob/main/LICENSE">
         <img src="https://img.shields.io/npm/l/git-as-a-cms">
     </a>
+    <a href="https://www.npmjs.com/package/git-as-a-cms">
+        <img src="https://img.shields.io/npm/unpacked-size/git-as-a-cms">
+    </a>
 </p>
 
 Use a GitHub repository as a headless CMS to source Markdown content.
