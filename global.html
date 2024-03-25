@@ -104,7 +104,7 @@
     
 
     
-    <h4 class="name" id="getRawContent"><span class="type-signature">(async) </span>getRawContent<span class="signature">(sha)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="getItemByPath"><span class="type-signature">(async) </span>getItemByPath<span class="signature">(options)</span><span class="type-signature"></span></h4>
     
 
     
@@ -112,7 +112,8 @@
 
 
 <div class="description">
-    Get raw content as string
+    Get single content item from path relative to project root.
+Useful in one-off situations where the path of file is known and constant.
 </div>
 
 
@@ -148,13 +149,13 @@
 
         <tr>
             
-                <td class="name"><code>sha</code></td>
+                <td class="name"><code>options</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">string</span>
+<span class="param-type"><a href="GetContentByPathOpt.html">GetContentByPathOpt</a></span>
 
 
             
@@ -164,7 +165,7 @@
 
             
 
-            <td class="description last">hash reffering to item</td>
+            <td class="description last"></td>
         </tr>
 
     
@@ -205,7 +206,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="GitCMS.ts.html">GitCMS.ts</a>, <a href="GitCMS.ts.html#line159">line 159</a>
+        <a href="GitCMS.ts.html">GitCMS.ts</a>, <a href="GitCMS.ts.html#line225">line 225</a>
     </li></ul></dd>
     
 
@@ -234,7 +235,155 @@
 
         
 <div class="param-desc">
-    Raw content
+    Content item
+</div>
+
+
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="getItemBySha"><span class="type-signature">(async) </span>getItemBySha<span class="signature">(options)</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Get single content item from SHA value.
+Intended to be used in conjunction with `listItems`.
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>options</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="GetContentByShaOpt.html">GetContentByShaOpt</a></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="GitCMS.ts.html">GitCMS.ts</a>, <a href="GitCMS.ts.html#line200">line 200</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    Content item
 </div>
 
 
@@ -259,8 +408,8 @@
 
 
 <div class="description">
-    Create list of items from repository via GitHub Trees API
-Will traverse directories recursively to get all items
+    Get list of content items from repository via GitHub Trees API.
+Will traverse directories recursively to get all items.
 </div>
 
 
@@ -312,7 +461,7 @@ Will traverse directories recursively to get all items
 
             
 
-            <td class="description last">Options for sourcing content from repository</td>
+            <td class="description last">Options for sourcing content from repository.</td>
         </tr>
 
     
@@ -353,7 +502,7 @@ Will traverse directories recursively to get all items
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="GitCMS.ts.html">GitCMS.ts</a>, <a href="GitCMS.ts.html#line172">line 172</a>
+        <a href="GitCMS.ts.html">GitCMS.ts</a>, <a href="GitCMS.ts.html#line263">line 263</a>
     </li></ul></dd>
     
 
@@ -382,7 +531,7 @@ Will traverse directories recursively to get all items
 
         
 <div class="param-desc">
-    List of content with metadata attached
+    List of content items with metadata attached.
 </div>
 
 
@@ -409,13 +558,13 @@ Will traverse directories recursively to get all items
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="GitCMS_GitCMS.html">GitCMS</a></li><li><a href="module.exports.html">exports</a></li></ul><h3>Interfaces</h3><ul><li><a href="FileListOject.html">FileListOject</a></li><li><a href="GitCMSSettings.html">GitCMSSettings</a></li><li><a href="ListFilesOptions.html">ListFilesOptions</a></li></ul><h3>Global</h3><ul><li><a href="global.html#getRawContent">getRawContent</a></li><li><a href="global.html#listItems">listItems</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="GitCMS_GitCMS.html">GitCMS</a></li><li><a href="module.exports.html">exports</a></li></ul><h3>Interfaces</h3><ul><li><a href="FileListOject.html">FileListOject</a></li><li><a href="GetContentByPathOpt.html">GetContentByPathOpt</a></li><li><a href="GetContentByShaOpt.html">GetContentByShaOpt</a></li><li><a href="GetContentOpts.html">GetContentOpts</a></li><li><a href="GitCMSSettings.html">GitCMSSettings</a></li><li><a href="ListFilesOptions.html">ListFilesOptions</a></li></ul><h3>Global</h3><ul><li><a href="global.html#getItemByPath">getItemByPath</a></li><li><a href="global.html#getItemBySha">getItemBySha</a></li><li><a href="global.html#listItems">listItems</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.2</a> on Sun Mar 24 2024 02:05:07 GMT+0000 (Coordinated Universal Time)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.2</a> on Mon Mar 25 2024 14:28:10 GMT+0000 (Coordinated Universal Time)
 </footer>
 
 <script> prettyPrint(); </script>
