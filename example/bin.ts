@@ -56,11 +56,11 @@ async function main(): Promise<void> {
   console.log(endTime - startTime)
 
   // get full raw content for each item
-  for await (const item of filesTree) {
-    const { sha } = item
-    const content = await gitCms.getRawContent(sha)
-    console.log(content)
-  }
+  // for await (const item of filesTree) {
+  //   const { sha } = item
+  //   const content = await gitCms.getRawContentBySha({ sha })
+  //   console.log(content)
+  // }
 
   return
 }

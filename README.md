@@ -92,7 +92,7 @@ Also, when using the frontmatter data down the line you'll have access to inform
 
 This function will return a list of all the content sourced from the repository. 
 
-By default, the returned list will also include the raw markup content. If you'd like to disable this you can set `includeContent` to `false` and instead fetch content later via the `getRawContent` method of the class with the returned `sha` values of each item.
+By default, the returned list will also include the raw markup content. If you'd like to disable this you can set `includeContent` to `false` and instead fetch content later via the `getItemBySha` or `getItemByPath` methods of the class with the returned values of each item.
 
 A use case like that would look like so:
 
@@ -110,12 +110,16 @@ const contentList = await gitCMS.listItems({
 
 // get plaintext content for all items
 for await (const item of contentList) {
+  const { sha, frontmatter, full_path } = item 
+
   // will be typed by input schema generic
-  const { sha, frontmatter } = item 
   console.log(frontmatter)
 
   // how to get content when not returned in list
-  const rawContent: string = await gitCMS.getRawContent(sha)
+  const rawContent: string = await gitCMS.getItemBySha({ sha })
+
+  // or with other method
+  const rawContentAgain: string = await gitCCMS.getItemByPath({ path: full_path })
   console.log(rawContent)
 }
 ```
@@ -124,7 +128,7 @@ for await (const item of contentList) {
 
 This tool is designed to be **READ ONLY** to your content with the default use of GitHub being the intended use case for updating content.
 
-Depending on the amount of content you want to source you may run into rate limits set by the GitHub API.
+Depending on the amount of content you want to source you may run into [rate limits](https://docs.github.com/en/rest/using-the-rest-api/rate-limits-for-the-rest-api?apiVersion=2022-11-28) set by the GitHub API.
 
 Also, the content returned to you will be raw Markdown in its plaintext form. This keeps the response agnostic to your use case. For transforming content for rendering that will depend on your tech stack. 
 

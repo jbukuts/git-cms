@@ -9,7 +9,11 @@ import type {
   GitCMSSettings,
   ListFilesOptions,
   TreeItem,
-  FileListOject
+  FileListOject,
+  GetContentByShaOpt,
+  GetContentByPathOpt,
+  GetContentRes,
+  GetContentOpts
 } from './types'
 import p from 'path'
 
@@ -37,13 +41,15 @@ export default class GitCMS<FM = Record<string, unknown>> {
   }
 
   /**
-   * Traverse repository content via GitHub Trees API
+   * Traverse repository content via GitHub Trees API.
+   * Although GH does have built-in utility that does this via the API
+   * that is limited by amount so it's been implemented manually just in case.
    * @private
    *
-   * @param sha sha1 of folder to start travsersing from
-   * @param extensions extensions to filter files by
-   * @param structure recursive helper to store chil
-   * @returns tree-like structure of folder contents with repository
+   * @param sha SHA of folder to start travsersing from.
+   * @param extensions Extensions to filter files by.
+   * @param structure Recursive helper to store children data.
+   * @returns Tree-like structure of folder contents with repository
    */
   private async manualTreeTraverse(
     sha: string,
@@ -99,12 +105,13 @@ export default class GitCMS<FM = Record<string, unknown>> {
   }
 
   /**
-   * Obtains sha1 of given path via GitHub Trees API
+   * Obtains sha1 of given path via GitHub Trees API.
+   * Used by `listItems` to begin tree traversal.
    * @private
    *
-   * @param path path to obtain sha1 for
-   * @param startSha sha1 to start from
-   * @returns {Promise<string>} sha of provided path within repository
+   * @param path Path to obtain sha1 for.
+   * @param startSha SHA to start from.
+   * @returns {Promise<string>} SHA of provided path within repository.
    */
   private async getShaOfPath(path: string, startSha: string = 'main') {
     const pathArr = splitPath(path)
@@ -129,11 +136,11 @@ export default class GitCMS<FM = Record<string, unknown>> {
   }
 
   /**
-   * Get blob for given sha
+   * Get blob for given sha.
    * @private
    *
-   * @param sha sha1 of item to get blob for
-   * @returns response data for blob item from API
+   * @param sha SHA of item to get blob for.
+   * @returns Response data for blob item from API.
    */
   private async getBlob(sha: string) {
     return this.octoInstance
@@ -190,25 +197,131 @@ export default class GitCMS<FM = Record<string, unknown>> {
   }
 
   /**
-   * Get raw content as string
-   * @public
+   * Arbitary method helper to get and process content.
+   * Used in `getItemBySha`, `getItemByPath`, and `listItems`.
+   * @private
    *
-   * @param {string} sha hash reffering to item
-   * @returns Raw content
+   * @param {GetContentOpts} options
    */
-  public async getRawContent(sha: string): Promise<string> {
-    const blobRes = await this.getBlob(sha)
-    const { content, encoding } = blobRes
-    return decode(content, encoding as BufferEncoding)
+  private async getContent<F = FM>(options: GetContentOpts): Promise<FileListOject<F>> {
+    const { getRaw, schema } = options
+
+    const { content, encoding, sha, size, url, path } = await getRaw()
+
+    const [created, updated] = await this.getDates(path)
+
+    const decodedContent = decode(content!, encoding as BufferEncoding)
+    const { data: fm, content: raw } = validateFrontmatter(decodedContent, schema)
+
+    // generate additional metadata
+    const toc = createToC(raw)
+    const reading_time = calcReadTime(size)
+    const { dir, name, ext } = p.posix.parse(path)
+
+    const obj: FileListOject<F> = {
+      title: toc[0]?.title || null,
+      toc,
+      sha,
+      url,
+      size,
+      created,
+      updated,
+      full_path: path,
+      reading_time,
+      path: {
+        dir,
+        name,
+        ext
+      },
+      frontmatter: fm as F,
+      content: raw
+    }
+
+    return obj
   }
 
   /**
-   * Create list of items from repository via GitHub Trees API
-   * Will traverse directories recursively to get all items
+   * Get single content item from SHA value.
+   * Intended to be used in conjunction with `listItems`.
    * @public
    *
-   * @param {ListFilesOptions} options Options for sourcing content from repository
-   * @returns List of content with metadata attached
+   * @param {GetContentByShaOpt} options
+   * @returns Content item
+   */
+  public async getItemBySha<F = FM>(options: GetContentByShaOpt): Promise<FileListOject<F>> {
+    const { sha } = options
+
+    const getRaw = async (): Promise<GetContentRes> => {
+      const blobRes = await this.getBlob(sha)
+      const { content, encoding, url, size } = blobRes
+
+      return {
+        content,
+        encoding,
+        url,
+        size: size || 0,
+        sha,
+        // TODO: handle path properly. Is this method even needed?
+        path: ''
+      }
+    }
+
+    return this.getContent({ getRaw })
+  }
+
+  /**
+   * Get single content item from path relative to project root.
+   * Useful in one-off situations where the path of file is known and constant.
+   * @public
+   *
+   * @param {GetContentByPathOpt} options
+   * @returns Content item
+   */
+  public async getItemByPath<F = FM>(options: GetContentByPathOpt): Promise<FileListOject<F>> {
+    const { path, schema = this.fmSchema } = options
+
+    const getRaw = async (): Promise<GetContentRes> => {
+      const res = await this.octoInstance.rest.repos.getContent({
+        owner: this.settings.owner,
+        repo: this.settings.repo,
+        path: path,
+        headers: {
+          'X-GitHub-Api-Version': '2022-11-28'
+        }
+      })
+
+      if (Array.isArray(res.data) || res.data.type !== 'file')
+        throw new Error(`Expected single file response.`)
+
+      const {
+        data: { content, download_url, encoding, sha, size, url, path: p }
+      } = res
+
+      let rawContent = content
+      if (!rawContent && download_url) rawContent = await fetch(download_url).then((r) => r.text())
+      else if (!rawContent && !download_url)
+        throw new Error('No raw content or download URL in response. Cannot proceed.')
+
+      return {
+        content: rawContent,
+        path: p,
+        sha,
+        encoding,
+        size,
+        url
+      }
+    }
+
+    return this.getContent<F>({ getRaw, schema })
+  }
+
+  /**
+   * Get list of content items from repository via GitHub Trees API.
+   * Will traverse directories recursively to get all items.
+   * @public
+   *
+   * @param {ListFilesOptions} options Options for sourcing content from repository.
+   * @returns List of content items with metadata attached.
    */
   public async listItems(options: ListFilesOptions | void) {
     const {
@@ -233,42 +346,25 @@ export default class GitCMS<FM = Record<string, unknown>> {
     const finalList: FileListOject<FM>[] = await Promise.all(
       flat.map(async (item) => {
         const { sha, path, size } = item
-        const data = await this.getBlob(sha)
-        const { content, encoding } = data
 
-        // decoded content
-        const decodedContent = decode(content, encoding as BufferEncoding)
+        const getRaw = async (): Promise<GetContentRes> => {
+          const data = await this.getBlob(sha)
+          const { content, encoding, url } = data
 
-        // extract and validate fronmatter
-        const { data: fm, content: rawContent } = validateFrontmatter(decodedContent, this.fmSchema)
-
-        // get creation, updated dates via commits
-        const [created, updated] = await this.getDates(path)
-
-        // generate additional metadata
-        const toc = createToC(rawContent)
-        const reading_time = calcReadTime(size)
-
-        const { dir, name, ext } = p.posix.parse(path)
-
-        const obj: FileListOject<FM> = {
-          title: toc[0]?.title || null,
-          reading_time,
-          toc,
-          created,
-          updated,
-          ...item,
-          path: {
-            dir,
-            name,
-            ext
-          },
-          full_path: path,
-          frontmatter: fm as FM,
-          ...(includeContent ? { content: rawContent } : {})
+          return {
+            content,
+            encoding,
+            sha,
+            size,
+            url,
+            path
+          }
         }
 
-        return obj
+        return this.getContent({ getRaw, schema: this.fmSchema }).then((o) => {
+          if (!includeContent) delete o['content']
+          return o
+        })
       })
     )
 

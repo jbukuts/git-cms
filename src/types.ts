@@ -46,7 +46,8 @@ export interface ListFilesOptions {
    */
   extensions?: ('.md' | '.mdx')[]
   /**
-   * Starting path to begin traversal of file structure
+   * Starting path to begin traversal of file structure.
+   * Default to `srcPath` from constructor.
    */
   path?: string
   /**
@@ -115,4 +116,51 @@ export interface FileListOject<FrontMatter> extends Omit<FileListItem, 'path'> {
    * Full path string to item from root of repository.
    */
   full_path: string
+}
+
+/**
+ * Options for `getItemBySha`
+ */
+export interface GetContentByShaOpt {
+  /**
+   * SHA value of item
+   */
+  sha: string
+  /**
+   * Optional schema to validated fronmatter against
+   */
+  schema?: SchemaObject
+}
+
+/**
+ * Options for `getItemByPath`
+ */
+export interface GetContentByPathOpt {
+  /**
+   * Path relative to project root of item
+   */
+  path: string
+  /**
+   * Optional schema to validated fronmatter against
+   */
+  schema?: SchemaObject
+}
+
+/**
+ * Options for generic helper `getContent`
+ */
+export interface GetContentOpts {
+  /**
+   * Function used to get raw content from REST API.
+   */
+  getRaw: () => Promise<GetContentRes>
+  /**
+   * Optional schema to validated fronmatter against
+   */
+  schema?: SchemaObject
+}
+
+export type GetContentRes = Pick<FileListOject<unknown>, 'content' | 'sha' | 'size' | 'url'> & {
+  encoding: string
+  path: string
 }

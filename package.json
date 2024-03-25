@@ -13,7 +13,8 @@
     "build": "tsc && rollup -c",
     "test": "NODE_V8_COVERAGE=coverage/ node --import tsx --test __test__/**/*.test.ts",
     "lint": "eslint .",
-    "doc": "jsdoc -d ./docs -c jsdoc.json src"
+    "doc": "jsdoc -d ./docs -c jsdoc.json src",
+    "doc:serve": "serve ./docs"
   },
   "keywords": [
     "contentlayer",
@@ -53,6 +54,7 @@
     "rollup": "^4.13.0",
     "rollup-plugin-dts": "^6.1.0",
     "rollup-plugin-esbuild": "^6.1.1",
+    "serve": "^14.2.1",
     "tsx": "^4.7.1",
     "typescript": "^5.3.3",
     "typescript-eslint": "^7.0.2"
